@@ -7,6 +7,7 @@ import sys
 
 from flask import Flask, request, abort
 
+from phabricator_api import Phabricator
 from slack_api import SlackApi
 
 import requests
@@ -18,6 +19,7 @@ slack_api = None
 phabricator_host = None
 phabricator_token = None
 phabricator = None
+phabricator_api = None
 
 
 @app.route('/', methods=['POST'])
@@ -33,16 +35,12 @@ def index():
             logging.info(resp)
             return resp
 
-        data = {
-            'api.token': phabricator_token,
-            'phids[0]': object_phid
-        }
+        object_phid_query = phabricator_api.phid_query(object_phid)
+        url = object_phid_query["result"][0]["uri"]
 
-        response = requests.post(phabricator_host + '/api/phid.query', data=data)
+        msg = u'%s %s' % (story_text, url)
 
-        msg = u'%s %s' % (story_text, object_phid)
         print(msg)
-        print(response)
         # slack_api.send_message("#phabricator", story_text)
 
         return 'success'
@@ -56,6 +54,7 @@ def main():
     global phabricator_host  # pylint: disable=global-statement
     global phabricator_token  # pylint: disable=global-statement
     global phabricator  # pylint: disable=global-statement
+    global phabricator_api  # pylint: disable=global-statement
 
     parser = argparse.ArgumentParser(
         description="Creates and updates Maniphest tasks for alerts",
@@ -88,6 +87,7 @@ def main():
         sys.exit(1)
 
     slack_api = SlackApi(slack_token)
+    phabricator_api = Phabricator(phabricator_host, phabricator_token)
 
     app.run(host=args.bind, port=args.port)
 
