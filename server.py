@@ -43,7 +43,7 @@ def index():
 
         uri = info["uri"]
 
-        msg = u'%s Click to view：%s' % (story_text, uri)
+        msg = '{} Click to view：{}'.format(story_text, uri)
 
         slack_api.send_message("#phabricator", msg)
 
