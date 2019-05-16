@@ -2,12 +2,12 @@
 
 import argparse
 import logging
+from phabricator import Phabricator
 import os
 import sys
 
 from flask import Flask, request, abort
 
-from phabricator_api import Phabricator, Subscriable
 from slack_api import SlackApi
 
 app = Flask(__name__)
@@ -16,7 +16,8 @@ slack_api = None
 phabricator_host = None
 phabricator_user = None
 phabricator_cert = None
-phabricator = None
+
+phab = Phabricator()
 
 
 @app.route('/', methods=['POST'])
@@ -32,14 +33,17 @@ def index():
             logging.info(resp)
             return resp
 
-        ph_obj = phabricator.get_object_by_phid(object_phid)
+        print("\n\n")
+        print(author_phid)
+        print("\n\n")
+        print(story_id)
+        print("\n\n")
+        print(object_phid)
+        print("\n\n")
+        print(story_text)
 
-        if not isinstance(ph_obj, Subscriable):
-            resp = "Unsupported object: %s" % object_phid
-            return resp
-
-        msg = u'%s Click to view：%s' % (story_text, ph_obj.url)
-        slack_api.send_message("#phabricator", msg)
+        msg = u'%s Click to view：%s' % (story_text, "")
+        slack_api.send_message("#phabricator", story_text)
 
         return 'success'
     else:
