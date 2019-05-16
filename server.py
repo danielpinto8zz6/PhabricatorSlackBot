@@ -36,12 +36,16 @@ def index():
             return resp
 
         object_phid_query = phabricator_api.phid_query(object_phid)
-        url = object_phid_query["result"][0]["uri"]
+        result = object_phid_query["result"]
+        info = result[object_phid]
 
-        msg = u'%s %s' % (story_text, url)
+        print(info)
 
-        print(msg)
-        # slack_api.send_message("#phabricator", story_text)
+        uri = info["uri"]
+
+        msg = u'%s Click to view：%s' % (story_text, uri)
+
+        slack_api.send_message("#phabricator", story_text)
 
         return 'success'
     else:
