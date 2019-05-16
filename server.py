@@ -45,7 +45,7 @@ def index():
 
         msg = u'%s Click to view：%s' % (story_text, uri)
 
-        slack_api.send_message("#phabricator", story_text)
+        slack_api.send_message("#phabricator", msg)
 
         return 'success'
     else:
