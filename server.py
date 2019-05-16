@@ -2,22 +2,21 @@
 
 import argparse
 import logging
-from phabricator import Phabricator
 import os
 import sys
 
 from flask import Flask, request, abort
 
+from phabricator import Phabricator, Subscriable
 from slack_api import SlackApi
 
 app = Flask(__name__)
 args = None
+
 slack_api = None
 phabricator_host = None
-phabricator_user = None
-phabricator_cert = None
-
-phab = Phabricator()
+phabricator_token = None
+phabricator = None
 
 
 @app.route('/', methods=['POST'])
@@ -30,20 +29,18 @@ def index():
 
         if object_phid is None:
             resp = 'Unsupported story: %r' % request.form
-            logging.info(resp)
+            app.logger.info(resp)
             return resp
 
-        print("\n\n")
-        print(author_phid)
-        print("\n\n")
-        print(story_id)
-        print("\n\n")
-        print(object_phid)
-        print("\n\n")
-        print(story_text)
+        ph_obj = phabricator.get_object_by_phid(object_phid)
+        if not isinstance(ph_obj, Subscriable):
+            resp = "Unsupported object: %s" % object_phid
+            app.logger.info(resp)
+            return resp
 
-        msg = u'%s Click to view：%s' % (story_text, "")
-        slack_api.send_message("#phabricator", story_text)
+        msg = u'%s %s' % (story_text, ph_obj.url)
+        print(msg)
+        # slack_api.send_message("#phabricator", story_text)
 
         return 'success'
     else:
@@ -54,8 +51,7 @@ def main():
     global args  # pylint: disable=global-statement
     global slack_api  # pylint: disable=global-statement
     global phabricator_host  # pylint: disable=global-statement
-    global phabricator_user  # pylint: disable=global-statement
-    global phabricator_cert  # pylint: disable=global-statement
+    global phabricator_token  # pylint: disable=global-statement
     global phabricator  # pylint: disable=global-statement
 
     parser = argparse.ArgumentParser(
@@ -83,17 +79,12 @@ def main():
         print("PHABRICATOR_HOST not set")
         sys.exit(1)
 
-    phabricator_user = os.environ.get("PHABRICATOR_USER")
-    if not phabricator_user:
-        print("PHABRICATOR_USER not set")
+    phabricator_token = os.environ.get("PHABRICATOR_TOKEN")
+    if not phabricator_token:
+        print("PHABRICATOR_TOKEN not set")
         sys.exit(1)
 
-    phabricator_cert = os.environ.get("PHABRICATOR_CERT")
-    if not phabricator_cert:
-        print("PHABRICATOR_CERT not set")
-        sys.exit(1)
-
-    phabricator = Phabricator(host=phabricator_host, username=phabricator_user, cert=phabricator_cert)
+    phabricator = Phabricator(host=phabricator_host, token=phabricator_token)
 
     slack_api = SlackApi(slack_token)
 
