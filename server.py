@@ -29,13 +29,13 @@ def index():
 
         if object_phid is None:
             resp = 'Unsupported story: %r' % request.form
-            app.logger.info(resp)
+            logging.info(resp)
             return resp
 
         ph_obj = phabricator.get_object_by_phid(object_phid)
         if not isinstance(ph_obj, Subscriable):
             resp = "Unsupported object: %s" % object_phid
-            app.logger.info(resp)
+            logging.info(resp)
             return resp
 
         msg = u'%s %s' % (story_text, ph_obj.url)
@@ -84,7 +84,7 @@ def main():
         print("PHABRICATOR_TOKEN not set")
         sys.exit(1)
 
-    phabricator = Phabricator(host=phabricator_host, token=phabricator_token)
+    phabricator = Phabricator(phabricator_host, phabricator_token)
 
     slack_api = SlackApi(slack_token)
 
