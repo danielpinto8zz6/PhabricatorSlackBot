@@ -7,7 +7,7 @@ import sys
 
 from flask import Flask, request, abort
 
-from phabricator import Phabricator, Subscriable
+from phabricator_api import Subscriable, Phabricator
 from slack_api import SlackApi
 
 app = Flask(__name__)
