@@ -7,8 +7,9 @@ import sys
 
 from flask import Flask, request, abort
 
-from phabricator_api import Subscriable, Phabricator
 from slack_api import SlackApi
+
+import requests
 
 app = Flask(__name__)
 args = None
@@ -32,14 +33,16 @@ def index():
             logging.info(resp)
             return resp
 
-        ph_obj = phabricator.get_object_by_phid(object_phid)
-        if not isinstance(ph_obj, Subscriable):
-            resp = "Unsupported object: %s" % object_phid
-            logging.info(resp)
-            return resp
+        data = {
+            'api.token': phabricator_token,
+            'phids[0]': object_phid
+        }
 
-        msg = u'%s %s' % (story_text, ph_obj.url)
+        response = requests.post(phabricator_host + '/api/phid.query', data=data)
+
+        msg = u'%s %s' % (story_text, object_phid)
         print(msg)
+        print(response)
         # slack_api.send_message("#phabricator", story_text)
 
         return 'success'
@@ -83,8 +86,6 @@ def main():
     if not phabricator_token:
         print("PHABRICATOR_TOKEN not set")
         sys.exit(1)
-
-    phabricator = Phabricator(phabricator_host, phabricator_token)
 
     slack_api = SlackApi(slack_token)
 

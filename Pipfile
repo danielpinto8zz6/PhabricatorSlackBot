@@ -9,6 +9,7 @@ verify_ssl = true
 slackclient = "*"
 Flask = "*"
 phabricator = "*"
+requests = "*"
 
 [requires]
 python_version = "3.7"
