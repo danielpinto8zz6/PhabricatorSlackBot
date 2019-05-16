@@ -2,8 +2,7 @@ from __future__ import absolute_import
 
 import re
 
-import phabricator_api
-
+import phabricator
 
 class PhabricatorObject(object):
 
@@ -239,7 +238,7 @@ class Phabricator(object):
     }
 
     def __init__(self, host=None, username=None, cert=None):
-        self.client = phabricator_api.Phabricator()
+        self.client = phabricator.Phabricator()
         if host is not None:
             self.client.host = host
         if username is not None:
